@@ -4,6 +4,7 @@ import { minimatch } from 'minimatch'
 import type { Plugin as VitePlugin, ViteDevServer, Connect } from 'vite'
 import { getEnv as cloudflarePagesGetEnv } from './cloudflare-pages/index.js'
 import type { Env, Fetch, EnvFunc, Plugin } from './types.js'
+import { WebSocketPair } from 'miniflare';
 
 export type DevServerOptions = {
   entry?: string
@@ -88,6 +89,10 @@ export function devServer(options?: DevServerOptions): VitePlugin {
           res: http.ServerResponse,
           next: Connect.NextFunction
         ): Promise<void> {
+          Object.assign(
+            globalThis,
+            { WebSocketPair }
+          )
           const exclude = options?.exclude ?? defaultOptions.exclude
 
           for (const pattern of exclude) {
