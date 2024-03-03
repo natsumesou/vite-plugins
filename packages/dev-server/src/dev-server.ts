@@ -4,7 +4,7 @@ import { minimatch } from 'minimatch'
 import type { Plugin as VitePlugin, ViteDevServer, Connect } from 'vite'
 import { getEnv as cloudflarePagesGetEnv } from './cloudflare-pages/index.js'
 import type { Env, Fetch, EnvFunc, Plugin } from './types.js'
-import { WebSocketPair } from 'miniflare';
+import { Runtime } from 'hono/adapter';
 
 export type DevServerOptions = {
   entry?: string
@@ -51,6 +51,10 @@ export type DevServerOptions = {
      * Function called when the vite dev server is closed
      */
     onServerClose?: () => Promise<void>
+    /**
+     * Runtime what you want to run
+     */
+    runtime?: Runtime
   }
 } & {
   /**
@@ -89,10 +93,15 @@ export function devServer(options?: DevServerOptions): VitePlugin {
           res: http.ServerResponse,
           next: Connect.NextFunction
         ): Promise<void> {
-          Object.assign(
-            globalThis,
-            { WebSocketPair }
-          )
+          switch (options?.adapter?.runtime) {
+            case 'workerd':
+              const { WebSocketPair } = await import('miniflare');
+              Object.assign(
+                globalThis,
+                { WebSocketPair }
+              )
+              break;
+          }
           const exclude = options?.exclude ?? defaultOptions.exclude
 
           for (const pattern of exclude) {
