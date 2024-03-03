@@ -106,6 +106,7 @@ export type DevServerOptions = {
   adapter?: {
     env?: Env
     onServerClose?: () => Promise<void>
+    runtime?: Runtime
   }
 }
 ```
@@ -179,6 +180,7 @@ export default defineConfig(async () => {
         adapter: {
           env,
           onServerClose: dispose,
+          runtime: 'workerd',
         },
       }),
     ],
